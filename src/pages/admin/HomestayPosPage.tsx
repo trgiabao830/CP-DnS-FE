@@ -160,7 +160,7 @@ const RoomCard = ({
             )}
           </div>
         ) : room.status === "AVAILABLE" ? (
-          <div className="flex h-full items-center justify-center text-[10px] font-medium italic text-gray-400">
+          <div className="flex h-full items-center justify-center text-[10px] font-medium text-gray-400">
             Sẵn sàng đón khách
           </div>
         ) : null}
@@ -767,10 +767,6 @@ const HomestayPosPage = () => {
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-sm border border-gray-200 bg-white shadow-sm"></div>{" "}
             Trống
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-sm border border-blue-200 bg-blue-50 shadow-sm"></div>{" "}
-            Đã đặt
           </div>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-sm border border-red-200 bg-red-50 shadow-sm"></div>{" "}

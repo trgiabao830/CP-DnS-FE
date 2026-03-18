@@ -142,7 +142,7 @@ const TableCard = ({
             </div>
           </div>
         ) : styles.displayStatus === "UPCOMING" && upcomingBooking ? (
-          <div className="animate-pulse text-sm">
+          <div className="text-sm">
             <div className="flex items-center gap-1 truncate font-bold">
               <AlertCircle size={14} /> {upcomingBooking.customerName}
             </div>
@@ -402,9 +402,6 @@ const RestaurantOverview = () => {
           </div>
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 rounded-sm border border-orange-300 bg-orange-100"></div> Sắp có khách (30p)
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded-sm border border-yellow-300 bg-yellow-50"></div> Đã đặt trước
           </div>
           <div className="flex items-center gap-1">
             <div className="h-3 w-3 rounded-sm border border-gray-300 bg-gray-200"></div> Tạm ngưng
