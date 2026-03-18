@@ -95,7 +95,6 @@ const BookingDetail: React.FC = () => {
   const fetchDetailRef = useRef<() => void>(() => {});
 
   const fetchDetail = () => {
-
     restaurantService
       .getBookingDetail(Number(id))
       .then(setBooking)
@@ -139,8 +138,7 @@ const BookingDetail: React.FC = () => {
             console.log("♻️ Dữ liệu thay đổi, đang tải lại...");
             fetchDetailRef.current();
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       }
     });
 
@@ -172,17 +170,15 @@ const BookingDetail: React.FC = () => {
     setSearchKeyword("");
     setActiveCategory("ALL");
 
-    if (menuFoods.length === 0) {
-      setMenuLoading(true);
-      try {
-        const today = new Date().toISOString().split("T")[0];
-        const data = await bookingService.getMenuForBooking(today, "");
-        setMenuFoods(data);
-      } catch (e) {
-        toast.error("Lỗi tải thực đơn");
-      } finally {
-        setMenuLoading(false);
-      }
+    setMenuLoading(true);
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const data = await bookingService.getMenuForBooking(today, "");
+      setMenuFoods(data);
+    } catch (e) {
+      toast.error("Lỗi tải thực đơn");
+    } finally {
+      setMenuLoading(false);
     }
   };
 
@@ -192,12 +188,10 @@ const BookingDetail: React.FC = () => {
     if (targetStatus === "CANCELLED") {
       if (booking.status === "SERVING") {
         await executeUpdateStatus();
-      }
-      else {
+      } else {
         await executeSpecialCancel();
       }
-    }
-    else {
+    } else {
       await executeUpdateStatus();
     }
   };
@@ -926,49 +920,62 @@ const BookingDetail: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                    {filteredFoods.map((food) => (
-                      <div
-                        key={food.foodId}
-                        onClick={() => {
-                          setSelectedFood(food);
-                          setIsFoodDetailOpen(true);
-                        }}
-                        className={`flex cursor-pointer flex-col gap-2 rounded-lg border p-2 transition-all hover:border-blue-300 hover:shadow-md ${
-                          food.status === "OUT_OF_STOCK"
-                            ? "opacity-60 grayscale"
-                            : ""
-                        }`}
-                      >
-                        <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
-                          <img
-                            src={food.imageUrl}
-                            className="h-full w-full object-cover"
-                            alt={food.name}
-                          />
-                          {food.status === "OUT_OF_STOCK" && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-bold text-white">
-                              Hết hàng
+                    {filteredFoods.map((food) => {
+                      const isOutOfStock = food.status === "OUT_OF_STOCK";
+
+                      return (
+                        <div
+                          key={food.foodId}
+                          onClick={() => {
+                            if (isOutOfStock) return; 
+                            
+                            setSelectedFood(food);
+                            setIsFoodDetailOpen(true);
+                          }}
+                          className={`flex flex-col gap-2 rounded-lg border p-2 transition-all ${
+                            isOutOfStock
+                              ? "cursor-not-allowed opacity-60 grayscale"
+                              : "cursor-pointer hover:border-blue-300 hover:shadow-md"
+                          }`}
+                        >
+                          <div className="relative aspect-square overflow-hidden rounded-md bg-gray-100">
+                            <img
+                              src={food.imageUrl}
+                              className="h-full w-full object-cover"
+                              alt={food.name}
+                            />
+                            {isOutOfStock && (
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-bold text-white">
+                                Hết hàng
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div
+                              className="line-clamp-2 text-sm font-bold text-gray-800"
+                              title={food.name}
+                            >
+                              {food.name}
                             </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div
-                            className="line-clamp-2 text-sm font-bold text-gray-800"
-                            title={food.name}
-                          >
-                            {food.name}
+                          </div>
+                          <div className="mt-1 flex items-center justify-between">
+                            <div className="text-sm font-bold text-blue-600">
+                              {formatPrice(food.discountPrice || food.basePrice)}
+                            </div>
+                            <button
+                              disabled={isOutOfStock} // Vô hiệu hóa nút Plus nếu hết hàng
+                              className={`rounded-full p-1 transition-colors ${
+                                isOutOfStock
+                                  ? "bg-gray-200 text-gray-400"
+                                  : "bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white"
+                              }`}
+                            >
+                              <Plus size={16} />
+                            </button>
                           </div>
                         </div>
-                        <div className="mt-1 flex items-center justify-between">
-                          <div className="text-sm font-bold text-blue-600">
-                            {formatPrice(food.discountPrice || food.basePrice)}
-                          </div>
-                          <button className="rounded-full bg-blue-50 p-1 text-blue-600 transition-colors hover:bg-blue-600 hover:text-white">
-                            <Plus size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
