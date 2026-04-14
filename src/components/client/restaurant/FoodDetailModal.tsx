@@ -36,17 +36,22 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
     variants.forEach((variant) => {
       if (variant.options && variant.options.length > 0) {
         if (variant.isRequired) {
-          const defaultOption = variant.options[0];
-          selections[variant.variantId] = defaultOption.optionId;
+          const defaultOption = variant.options.find(
+            (o) => o.status !== "UNAVAILABLE" && o.status !== "OUT_OF_STOCK",
+          );
 
-          if (
-            defaultOption.linkedVariants &&
-            defaultOption.linkedVariants.length > 0
-          ) {
-            const childSelections = getDefaultSelections(
-              defaultOption.linkedVariants,
-            );
-            selections = { ...selections, ...childSelections };
+          if (defaultOption) {
+            selections[variant.variantId] = defaultOption.optionId;
+
+            if (
+              defaultOption.linkedVariants &&
+              defaultOption.linkedVariants.length > 0
+            ) {
+              const childSelections = getDefaultSelections(
+                defaultOption.linkedVariants,
+              );
+              selections = { ...selections, ...childSelections };
+            }
           }
         }
       }
@@ -168,7 +173,39 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
     return results;
   };
 
+  const isCartValid = (): boolean => {
+    if (!food) return false;
+
+    const checkVariants = (variants: FoodVariant[]): boolean => {
+      for (const variant of variants) {
+        const selectedOptionId = selectedOptions[variant.variantId];
+
+        if (variant.isRequired && !selectedOptionId) {
+          return false;
+        }
+
+        if (selectedOptionId) {
+          const selectedOpt = variant.options.find(
+            (o) => o.optionId === selectedOptionId,
+          );
+          if (
+            selectedOpt &&
+            selectedOpt.linkedVariants &&
+            selectedOpt.linkedVariants.length > 0
+          ) {
+            const isChildValid = checkVariants(selectedOpt.linkedVariants);
+            if (!isChildValid) return false;
+          }
+        }
+      }
+      return true;
+    };
+
+    return checkVariants(food.variants);
+  };
+
   const handleConfirm = () => {
+    if (!isCartValid()) return;
     const finalCartOptions = collectSelectedOptions(food.variants);
 
     const displayOptionNames = generateRecursiveOptionNames(food.variants);
@@ -217,6 +254,8 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
           <div className="space-y-3">
             {variant.options.map((opt) => {
+              if (opt.status === "UNAVAILABLE") return null;
+              const isOutOfStock = opt.status === "OUT_OF_STOCK";
               const isSelected =
                 selectedOptions[variant.variantId] === opt.optionId;
 
@@ -225,6 +264,7 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                   <label
                     onClick={(e) => {
                       e.preventDefault();
+                      if (isOutOfStock) return;
                       if (!variant.isRequired && isSelected) {
                         const newSelections = { ...selectedOptions };
                         delete newSelections[variant.variantId];
@@ -262,6 +302,11 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
                       >
                         {opt.name}
                       </span>
+                      {isOutOfStock && (
+                        <span className="rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-bold text-red-600">
+                          Hết món
+                        </span>
+                      )}
                     </div>
                     <span className="text-sm font-medium text-gray-500">
                       {opt.priceAdjustment > 0
@@ -285,6 +330,8 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
       );
     });
   };
+
+  const isValid = isCartValid();
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -352,9 +399,16 @@ const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
 
             <button
               onClick={handleConfirm}
-              className="flex-grow rounded-lg bg-cyan-400 py-3 font-bold text-white shadow-lg shadow-cyan-100 transition-all hover:bg-cyan-500"
+              disabled={!isValid}
+              className={`flex-grow rounded-lg py-3 font-bold text-white transition-all ${
+                isValid
+                  ? "bg-cyan-400 shadow-lg shadow-cyan-100 hover:bg-cyan-500"
+                  : "cursor-not-allowed bg-gray-300"
+              }`}
             >
-              Thêm vào đơn | {formatPrice(calculateTotal())}
+              {isValid
+                ? `Thêm vào đơn | ${formatPrice(calculateTotal())}`
+                : "Vui lòng chọn món bắt buộc"}
             </button>
           </div>
         </div>

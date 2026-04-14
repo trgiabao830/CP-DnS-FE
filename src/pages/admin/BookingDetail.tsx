@@ -757,12 +757,15 @@ const BookingDetail: React.FC = () => {
                         {getPaymentMethodLabel(booking.paymentMethod)}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Thời gian TT</span>
-                      <span className="font-medium">
-                        {booking.paymentTime || "Chưa thanh toán"}
-                      </span>
-                    </div>
+                    {(booking.paymentTime ||
+                      booking.paymentMethod !== "CASH") && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Thời gian TT</span>
+                        <span className="font-medium">
+                          {booking.paymentTime || "Chưa thanh toán"}
+                        </span>
+                      </div>
+                    )}
                     {booking.vnpTxnRef && (
                       <div className="flex items-start justify-between">
                         <span className="text-gray-500">VNPAY Ref</span>
@@ -927,8 +930,8 @@ const BookingDetail: React.FC = () => {
                         <div
                           key={food.foodId}
                           onClick={() => {
-                            if (isOutOfStock) return; 
-                            
+                            if (isOutOfStock) return;
+
                             setSelectedFood(food);
                             setIsFoodDetailOpen(true);
                           }}
@@ -960,7 +963,9 @@ const BookingDetail: React.FC = () => {
                           </div>
                           <div className="mt-1 flex items-center justify-between">
                             <div className="text-sm font-bold text-blue-600">
-                              {formatPrice(food.discountPrice || food.basePrice)}
+                              {formatPrice(
+                                food.discountPrice || food.basePrice,
+                              )}
                             </div>
                             <button
                               disabled={isOutOfStock} // Vô hiệu hóa nút Plus nếu hết hàng
