@@ -166,8 +166,10 @@ const ChatWidget: React.FC = () => {
     setMessages([]);
     setMode("AI");
   };
-  const handleStartChatSupport = () =>
+  const handleStartChatSupport = () => {
+    setMessages([]);
     user ? setMode("SUPPORT") : setMode("GUEST_FORM");
+  };
   const handleGuestFormSubmit = () => isFormValid && setMode("SUPPORT");
   const formatTime = (dateString?: string) =>
     dateString ? format(new Date(dateString), "dd/MM/yyyy HH:mm") : "";
